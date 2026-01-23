@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard de Contatos</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<header class="header">
+  <div class="header-left">
+    <h1>Dashboard de Contatos</h1>
+    <span class="subtitle">Visão geral da base de clientes</span>
+  </div>
+
+  <div class="header-right">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Buscar por país ou cargo..."
+      class="search-input"
+    />
+  </div>
+</header>
+
+  <div class="kpis">
+    <div class="card">
+      <span>Total de contatos</span>
+      <strong>{{ total_contatos }}</strong>
+    </div>
+
+    <div class="card">
+      <span>Clientes ativos</span>
+      <strong>{{ total_ativos }}</strong>
+    </div>
+
+    <div class="card">
+      <span>% clientes ativos</span>
+      <strong>{{ perc_ativos }}%</strong>
+    </div>
+
+    <div class="card">
+      <span>Países</span>
+      <strong>{{ total_paises }}</strong>
+    </div>
+  </div>
+
+<div class="charts">
+  <div class="chart-card">
+    <div id="pizza"></div>
+  </div>
+
+  <div class="chart-card">
+    <div id="bar_pais"></div>
+  </div>
+
+  <div class="chart-card">
+    <div id="linha_mes"></div>
+  </div>
+</div>
+
+<script>
+  // ===== Pizza =====
+  Plotly.newPlot("pizza", [{
+    values: {{ pizza_clientes.values.tolist() | safe }},
+    labels: {{ pizza_clientes.index.tolist() | safe }},
+    type: "pie"
+  }], {
+    title: "Proporção atual da base de clientes"
+  });
+
+  // ===== País =====
+  Plotly.newPlot("bar_pais", [{
+    x: {{ contatos_por_pais.index.tolist() | safe }},
+    y: {{ contatos_por_pais.values.tolist() | safe }},
+    type: "bar"
+  }], {
+    title: "Distribuição geográfica dos contatos"
+  });
+
+  // ===== Linha temporal =====
+  {% if criacao_dia is defined %}
+  Plotly.newPlot("linha_mes", [{
+    x: {{ criacao_dia.index.tolist() | safe }},
+    y: {{ criacao_dia.values.tolist() | safe }},
+    type: "scatter",
+    mode: "lines+markers",
+    marker: { size: 8 }
+  }], {
+    title: "Evolução diária de novos clientes",
+    xaxis: {
+      title: "Dia do mês",
+      tickmode: "linear",
+      dtick: 1
+    },
+    yaxis: {
+      title: "Clientes criados",
+      autorange: true,
+      rangemode: "normal",
+      tickformat: "d"
+    }
+  });
+  {% endif %}
+</script>
+</body>
+</html>
